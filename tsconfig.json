@@ -1,12 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES6",
     "module": "CommonJS",
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "esModuleInterop": true,
     "strict": true,
-    "esModuleInterop": true
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "resolveJsonModule": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*",  // Inclure tous les fichiers TypeScript dans le dossier src
+    "src/types/express.d.ts" // Inclure les fichiers de types personnalisés
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
