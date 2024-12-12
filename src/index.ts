@@ -1,6 +1,9 @@
 import express, { Request, Response, NextFunction } from "express";
 import userRoutes from "./routes/users"; 
-import connectDB from "./config/db"; 
+import SongsRoutes from "./routes/songs";
+import ArtistRoutes from "./routes/artists";
+import connectDB from "./config/db";
+import GenresRoutes from "./routes/genres"; 
 
 connectDB();
 
@@ -13,6 +16,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use("/users", userRoutes); 
+app.use("/songs", SongsRoutes); 
+app.use("/artists", ArtistRoutes);
+app.use("/genre", GenresRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "API fonctionnelle." });

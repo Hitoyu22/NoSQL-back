@@ -10,8 +10,8 @@
     "resolveJsonModule": true
   },
   "include": [
-    "src/**/*",  // Inclure tous les fichiers TypeScript dans le dossier src
-    "src/types/express.d.ts" // Inclure les fichiers de types personnalisés
+    "src/**/*",  
+    "src/types/express.d.ts" 
   ],
   "exclude": [
     "node_modules"
