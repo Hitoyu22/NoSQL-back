@@ -6,7 +6,8 @@ import {
     updateSong,
     deleteSong,
     playSong,
-    listLikes 
+    listLikes,
+    getSongsByGenre
 } from "../controllers/songsController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
@@ -19,5 +20,6 @@ router.patch("/:id", authMiddleware, updateSong);
 router.delete("/:id", authMiddleware, deleteSong); 
 router.post("/:id/play", playSong); 
 router.get("/:id/likes", listLikes);
+router.get("/idGenre", getSongsByGenre);
 
 export default router;

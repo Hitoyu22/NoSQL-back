@@ -7,6 +7,7 @@ const SongSchema = new Schema({
     filePath: { type: String, required: true },
     coverImageUrl: { type: String },
     likesCount: { type: Number, default: 0 },
+    viewsCount: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now }
 });
 

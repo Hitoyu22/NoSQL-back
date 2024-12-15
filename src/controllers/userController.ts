@@ -5,10 +5,12 @@ import { User } from "../models/User";
 import { RequestHandler } from 'express';
 import { Song } from '../models/Song';
 import { Artist } from '../models/Artist';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { Schema } from "mongoose";
 
 dotenv.config();
 
+// Route pour s'inscrire
 export const registerUser: RequestHandler = async (req, res, next) => {
     try {
         const { username, email, password } = req.body;
@@ -36,6 +38,7 @@ export const registerUser: RequestHandler = async (req, res, next) => {
     }
 };
 
+// Route pour se connecter
 export const loginUser: RequestHandler = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -73,6 +76,7 @@ export const loginUser: RequestHandler = async (req, res, next) => {
     }
 };
 
+// Route pour récupérer le profil utilisateur
 export const getUserProfile: RequestHandler = async (req, res, next) => {
     try {
         const userId = req.body.userId; 
@@ -90,7 +94,7 @@ export const getUserProfile: RequestHandler = async (req, res, next) => {
     }
 };
 
-
+// Route pour update le profil utilisateur
 export const updateUser: RequestHandler = async (req, res, next) => {
     try {
         const userId = req.params.id;
@@ -115,6 +119,8 @@ export const updateUser: RequestHandler = async (req, res, next) => {
     }
 };
 
+// Route pour supprimer un utilisateur (à travailler encore car pas suppresion en cascade)
+// Consistera plutôt en une anonymisation des données
 export const deleteUser: RequestHandler = async (req, res, next) => {
     try {
         const userId = req.params.id;
@@ -133,85 +139,7 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
     }
 };
 
-export const getLikedSongs: RequestHandler = async (req, res, next) => {
-    try {
-        const userId = req.params.id;
-        const user = await User.findById(userId).populate('likedSongs');
-
-        if (!user) {
-            res.status(404).json({ message: "Utilisateur non trouvé." });
-            return;
-        }
-
-        res.status(200).json({ likedSongs: user.likedSongs });
-    } catch (error) {
-        console.error("Erreur lors de la récupération des chansons aimées:", error);
-        res.status(500).json({ message: "Erreur interne du serveur." });
-    }
-};
-
-export const addLikedSong: RequestHandler = async (req, res) => {
-    try {
-        const { userId, songId } = req.body;
-
-        const user = await User.findById(userId);
-        if (!user) {
-            res.status(404).json({ message: "Utilisateur non trouvé." });
-            return;
-        }
-
-        const song = await Song.findById(songId);
-        if (!song) {
-            res.status(404).json({ message: "Chanson non trouvée." });
-            return;
-        }
-
-        if (!user.likedSongs.includes(songId)) {
-            user.likedSongs.push(songId);
-            await user.save();
-            res.status(200).json({ message: "Chanson ajoutée aux chansons aimées." }); 
-            return;
-        } else {
-            res.status(400).json({ message: "Cette chanson est déjà dans vos chansons aimées." }); 
-            return;
-        }
-    } catch (error) {
-        console.error("Erreur lors de l'ajout de la chanson aux chansons aimées:", error);
-        res.status(500).json({ message: "Erreur interne du serveur." }); 
-        return;
-    }
-};
-
-export const removeLikedSong: RequestHandler = async (req, res) => {
-    try {
-        const { userId, songId } = req.body;
-
-        const user = await User.findById(userId);
-        if (!user) {
-            res.status(404).json({ message: "Utilisateur non trouvé." });
-            return;
-        }
-
-        const song = await Song.findById(songId);
-        if (!song) {
-            res.status(404).json({ message: "Chanson non trouvée." });
-            return
-        }
-
-        const index = user.likedSongs.indexOf(songId);
-        if (index !== -1) {
-            user.likedSongs.splice(index, 1);
-            await user.save();
-            res.status(200).json({ message: "Chanson retirée des chansons aimées." });
-        } else {
-            res.status(400).json({ message: "Cette chanson n'est pas dans vos chansons aimées." });
-        }
-    } catch (error) {
-        console.error("Erreur lors du retrait de la chanson des chansons aimées:", error);
-        res.status(500).json({ message: "Erreur interne du serveur." });
-    }
-};
-
+// Route pour récupérer les artistes préférés d'un utilisateur
 export const getFavoriteArtists: RequestHandler = async (req, res, next) => {
     try {
         const userId = req.params.id;
@@ -229,6 +157,7 @@ export const getFavoriteArtists: RequestHandler = async (req, res, next) => {
     }
 };
 
+// Route pour ajouter un artiste aux favoris
 export const addFavoriteArtist: RequestHandler = async (req, res) => {
     try {
         const { userId, artistId } = req.body;
@@ -258,10 +187,11 @@ export const addFavoriteArtist: RequestHandler = async (req, res) => {
     }
 };
 
+// Route pour retirer un artiste des favoris
 export const unfavoriteArtist: RequestHandler = async (req, res) => {
     try {
         const userId = req.params.id;
-        const { artistId } = req.body;
+        const artistId = req.params.idArtist;
 
         if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(artistId)) {
             res.status(400).json({ message: "ID utilisateur ou artiste invalide." });

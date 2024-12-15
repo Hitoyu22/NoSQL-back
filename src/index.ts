@@ -4,6 +4,7 @@ import SongsRoutes from "./routes/songs";
 import ArtistRoutes from "./routes/artists";
 import connectDB from "./config/db";
 import GenresRoutes from "./routes/genres"; 
+import PlaylistRoutes from "./routes/playlists";
 
 connectDB();
 
@@ -19,6 +20,7 @@ app.use("/users", userRoutes);
 app.use("/songs", SongsRoutes); 
 app.use("/artists", ArtistRoutes);
 app.use("/genre", GenresRoutes);
+app.use("/playlists", PlaylistRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "API fonctionnelle." });
