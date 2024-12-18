@@ -4,6 +4,7 @@ import { RequestHandler } from 'express';
 import { Artist } from "../models/Artist";
 import { Playlist } from "../models/Playlist";
 import { User } from "../models/User";
+import FuzzySearch from 'fuzzy-search';
 
 // Route pour lister toutes les chansons
 export const listSongs: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
@@ -19,11 +20,6 @@ export const listSongs: RequestHandler = async (req: Request, res: Response, nex
 // Route pour ajouter une nouvelle chanson
 export const addSong: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     const { title, artist, genre, coverImageUrl, filePath } = req.body;
-
-    if (!filePath) {
-        res.status(400).json({ message: "Le fichier audio est requis." });
-        return;
-    }
 
     const newSong = new Song({
         title,
@@ -68,6 +64,36 @@ export const getSongById: RequestHandler = async (req: Request, res: Response, n
         res.status(200).json(song);
     } catch (error) {
         console.error("Erreur lors de la récupération de la chanson:", error);
+        res.status(500).json({ message: "Erreur interne du serveur." });
+    }
+};
+
+export const searchSongs: RequestHandler = async (req, res, next) => {
+    const { query } = req.query; 
+
+    try {
+        const allSongs = await Song.find().populate("artist genre").limit(10).exec();
+
+        if (!query || typeof query !== "string") {
+            res.status(200).json(allSongs);
+            return;
+        }
+
+        const searcher = new FuzzySearch(allSongs, ['title', 'artist.name', 'genre.name'], {
+            caseSensitive: false,
+            sort: true
+        });
+
+        const result = searcher.search(query);
+
+        if (result.length === 0) {
+            res.status(204).json({ message: "Aucune chanson trouvée correspondant à votre recherche." });
+            return;
+        }
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error("Erreur lors de la recherche de chansons:", error);
         res.status(500).json({ message: "Erreur interne du serveur." });
     }
 };

@@ -7,7 +7,8 @@ import {
     deleteSong,
     playSong,
     listLikes,
-    getSongsByGenre
+    getSongsByGenre,
+    searchSongs
 } from "../controllers/songsController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.get("/", listSongs); 
 router.post("/", authMiddleware, addSong); 
+router.get("/search", searchSongs);
 router.get("/:id", getSongById); 
 router.patch("/:id", authMiddleware, updateSong); 
 router.delete("/:id", authMiddleware, deleteSong); 

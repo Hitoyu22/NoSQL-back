@@ -2,6 +2,8 @@ import express, { Request, Response } from "express";
 import { Artist } from "../models/Artist";
 import { Song } from "../models/Song";
 import { RequestHandler } from 'express';
+import { User } from "../models/User";
+
 
 export const listArtists : RequestHandler = async (req, res, next) => {
     try {
@@ -13,10 +15,24 @@ export const listArtists : RequestHandler = async (req, res, next) => {
     }
 };
 
-export const addArtist : RequestHandler = async (req, res, next) => {
+export const addArtist: RequestHandler = async (req, res, next) => {
+    const userId = req.body.userId; 
+
+    if (!userId) {
+        res.status(401).json({ message: "Utilisateur non authentifié." });
+    }
+
     const { name, bio, profilePictureUrl, genres } = req.body;
+
     try {
-        const newArtist = new Artist({ name, bio, profilePictureUrl, genres });
+        const newArtist = new Artist({
+            name,
+            bio,
+            profilePictureUrl,
+            genres,
+            userId
+        });
+
         await newArtist.save();
         res.status(201).json({ message: "Artiste créé avec succès.", artist: newArtist });
     } catch (error) {
@@ -31,6 +47,21 @@ export const getArtistById : RequestHandler = async (req, res, next) => {
         const artist = await Artist.findById(id).populate("songs");
         if (!artist) {
             res.status(404).json({ message: "Artiste non trouvé." });
+            return;
+        }
+        res.status(200).json(artist);
+    } catch (error) {
+        console.error("Erreur lors de la récupération de l'artiste:", error);
+        res.status(500).json({ message: "Erreur interne du serveur." });
+    }
+};
+
+export const getArtistByUser: RequestHandler = async (req, res, next) => {
+    const { userId } = req.params;
+    try {
+        const artist = await Artist.findOne({ userId }).populate("songs");
+        if (!artist) {
+            res.status(204).json({ message: "Artiste non trouvé." });
             return;
         }
         res.status(200).json(artist);

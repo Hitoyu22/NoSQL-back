@@ -7,7 +7,8 @@ const ArtistSchema = new Schema({
     profilePictureUrl: { type: String },
     songs: [{ type: Schema.Types.ObjectId, ref: "Song" }],
     genres: [{ type: Schema.Types.ObjectId, ref: "Genre" }],
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },  
 });
 
 

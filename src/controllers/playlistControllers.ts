@@ -63,7 +63,7 @@ export const addSongToPlaylist: RequestHandler = async (req: Request, res: Respo
         }
 
         if (playlist.songs.includes(idSong)) {
-            res.status(400).json({ message: "Cette chanson est déjà dans la playlist." });
+            res.status(409).json({ message: "Cette chanson est déjà dans la playlist." });
             return;
         }
 

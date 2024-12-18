@@ -5,11 +5,21 @@ import ArtistRoutes from "./routes/artists";
 import connectDB from "./config/db";
 import GenresRoutes from "./routes/genres"; 
 import PlaylistRoutes from "./routes/playlists";
+const cors = require('cors');
+
 
 connectDB();
 
 const app = express();
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: "*", 
+    methods: ["GET", "POST", "PUT", "DELETE"], 
+    allowedHeaders: ["Content-Type", "Authorization"], 
+  })
+);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`${req.method} ${req.url}`);
@@ -28,3 +38,4 @@ app.get("/", (req: Request, res: Response) => {
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
+
