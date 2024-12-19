@@ -8,7 +8,8 @@ import {
     playSong,
     listLikes,
     getSongsByGenre,
-    searchSongs
+    searchSongs,
+    getSongByArtist
 } from "../controllers/songsController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
@@ -23,5 +24,6 @@ router.delete("/:id", authMiddleware, deleteSong);
 router.post("/:id/play", playSong); 
 router.get("/:id/likes", listLikes);
 router.get("/idGenre", getSongsByGenre);
+router.get("/artist/:artist", getSongByArtist);
 
 export default router;

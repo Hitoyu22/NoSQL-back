@@ -68,6 +68,21 @@ export const getSongById: RequestHandler = async (req: Request, res: Response, n
     }
 };
 
+export const getSongByArtist: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+    const { artist } = req.params;
+    try {
+        const song = await Song.find({artist}).populate("artist genre");
+        if (!song) {
+            res.status(404).json({ message: "Chanson non trouvée." });
+            return;
+        }
+        res.status(200).json(song);
+    } catch (error) {
+        console.error("Erreur lors de la récupération de la chanson:", error);
+        res.status(500).json({ message: "Erreur interne du serveur." });
+    }
+};
+
 export const searchSongs: RequestHandler = async (req, res, next) => {
     const { query } = req.query; 
 

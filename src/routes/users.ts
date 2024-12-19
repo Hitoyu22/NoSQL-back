@@ -19,8 +19,8 @@ router.get("/me", authMiddleware, getUserProfile);
 router.put("/:id", authMiddleware, updateUser); 
 router.delete("/:id", authMiddleware, deleteUser);
 router.get("/:id/favorite-artists", authMiddleware, getFavoriteArtists);
-router.post("/:id/favorite-artists", authMiddleware, addFavoriteArtist);
-router.delete("/:id/favorite-artists/:idArtist", authMiddleware, unfavoriteArtist);
+router.post("/favorite-artists", authMiddleware, addFavoriteArtist);
+router.delete("/favorite-artists/:idArtist", authMiddleware, unfavoriteArtist);
 
 
 export default router;

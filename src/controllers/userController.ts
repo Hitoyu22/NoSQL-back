@@ -120,7 +120,6 @@ export const updateUser: RequestHandler = async (req, res, next) => {
 };
 
 // Route pour supprimer un utilisateur (à travailler encore car pas suppresion en cascade)
-// Consistera plutôt en une anonymisation des données
 export const deleteUser: RequestHandler = async (req, res, next) => {
     try {
         const userId = req.params.id;
@@ -190,31 +189,34 @@ export const addFavoriteArtist: RequestHandler = async (req, res) => {
 // Route pour retirer un artiste des favoris
 export const unfavoriteArtist: RequestHandler = async (req, res) => {
     try {
-        const userId = req.params.id;
+        const { userId } = req.body;
         const artistId = req.params.idArtist;
 
         if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(artistId)) {
             res.status(400).json({ message: "ID utilisateur ou artiste invalide." });
-            return;  
+            return;
         }
 
         const user = await User.findById(userId);
 
         if (!user) {
             res.status(404).json({ message: "Utilisateur non trouvé." });
-            return;  
+            return;
         }
 
-        user.favoriteArtists = user.favoriteArtists.filter((artist) => {
-            return artist.toString() !== artistId;
-        });
-                await user.save();
+        const artistExists = user.favoriteArtists.some((artist) => artist.toString() === artistId);
+
+        if (!artistExists) {
+            res.status(404).json({ message: "Artiste non trouvé dans la liste des favoris." });
+            return;
+        }
+
+        user.favoriteArtists = user.favoriteArtists.filter((artist) => artist.toString() !== artistId);
+        await user.save();
 
         res.status(200).json({ message: "Artiste retiré des favoris.", favoriteArtists: user.favoriteArtists });
-        return;  
     } catch (error) {
         console.error("Erreur lors du retrait de l'artiste des favoris:", error);
         res.status(500).json({ message: "Erreur interne du serveur." });
-        return;  
     }
 };
