@@ -6,6 +6,7 @@ import connectDB from "./config/db";
 import GenresRoutes from "./routes/genres"; 
 import PlaylistRoutes from "./routes/playlists";
 const cors = require('cors');
+import path from 'path';
 
 
 connectDB();
@@ -26,6 +27,15 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next(); 
 });
 
+const imagesSongPath = path.resolve(__dirname, '../images/songs');
+app.use('/images/songs', express.static(imagesSongPath));
+
+const imagesArtistPath = path.resolve(__dirname, '../images/artists');
+app.use('/images/artists', express.static(imagesArtistPath));
+
+const imagesPlaylistPath = path.resolve(__dirname, '../images/playlists');
+app.use('/images/playlists', express.static(imagesPlaylistPath));
+
 app.use("/users", userRoutes); 
 app.use("/songs", SongsRoutes); 
 app.use("/artists", ArtistRoutes);
@@ -38,4 +48,3 @@ app.get("/", (req: Request, res: Response) => {
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
-

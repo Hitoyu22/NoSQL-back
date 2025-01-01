@@ -19,7 +19,7 @@ router.get("/", listSongs);
 router.post("/", authMiddleware, addSong); 
 router.get("/search", searchSongs);
 router.get("/:id", getSongById); 
-router.patch("/:id", authMiddleware, updateSong); 
+router.put("/:id", authMiddleware, updateSong); 
 router.delete("/:id", authMiddleware, deleteSong); 
 router.post("/:id/play", playSong); 
 router.get("/:id/likes", listLikes);
