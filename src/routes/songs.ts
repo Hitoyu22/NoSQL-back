@@ -9,13 +9,15 @@ import {
     listLikes,
     getSongsByGenre,
     searchSongs,
-    getSongByArtist
+    getSongByArtist,
+    listSong
 } from "../controllers/songsController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
 router.get("/", listSongs); 
+router.get("/recommandations", listSong);
 router.post("/", authMiddleware, addSong); 
 router.get("/search", searchSongs);
 router.get("/:id", getSongById); 

@@ -76,7 +76,7 @@ export const createPlaylist: RequestHandler = async (req, res, next) => {
 };
 
 // Route pour récupérer toutes les playlists d'un user
-export const getUserPlaylists: RequestHandler = async (req: Request, res: Response): Promise<void> => {
+export const getUserPlaylists: RequestHandler = async (req: Request, res: Response) => {
     const userId = req.params.id;
 
     if (!userId) {

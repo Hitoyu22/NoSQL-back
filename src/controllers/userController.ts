@@ -3,10 +3,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from "../models/User";
 import { RequestHandler } from 'express';
-import { Song } from '../models/Song';
+import { Types } from 'mongoose';
 import { Artist } from '../models/Artist';
-import mongoose, { Types } from 'mongoose';
-import { Schema } from "mongoose";
 
 dotenv.config();
 
@@ -142,14 +140,27 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
 export const getFavoriteArtists: RequestHandler = async (req, res, next) => {
     try {
         const userId = req.params.id;
-        const user = await User.findById(userId).populate('favoriteArtists');
+        const user = await User.findById(userId).populate({
+            path: 'favoriteArtists',
+            model: 'Artist', // Assumes the related model is named 'Artist'
+        });
 
         if (!user) {
             res.status(404).json({ message: "Utilisateur non trouvé." });
             return;
         }
 
-        res.status(200).json({ favoriteArtists: user.favoriteArtists });
+        const baseUrl = req.protocol + '://' + req.get('host');
+
+        const favoriteArtistsWithFullUrls = user.favoriteArtists.map((artist: any) => {
+            let artistWithFullProfileImageUrl = { ...artist._doc }; // Use _doc to access the raw document
+            if (artist.profilePictureUrl) {
+                artistWithFullProfileImageUrl.profilePictureUrl = baseUrl + artist.profilePictureUrl;
+            }
+            return artistWithFullProfileImageUrl;
+        });
+
+        res.status(200).json({ favoriteArtists: favoriteArtistsWithFullUrls });
     } catch (error) {
         console.error("Erreur lors de la récupération des artistes favoris:", error);
         res.status(500).json({ message: "Erreur interne du serveur." });

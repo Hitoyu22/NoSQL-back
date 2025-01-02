@@ -8,7 +8,7 @@ import FuzzySearch from 'fuzzy-search';
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 
 const storage = multer.diskStorage({
@@ -106,6 +106,25 @@ export const addSong: RequestHandler = async (req, res, next) => {
 export const listSongs: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const songs = await Song.find().populate("artist genre");
+
+        const baseUrl = req.protocol + "://" + req.get("host");
+
+        const songsWithFullImageUrl = songs.map(song => ({
+            ...song.toObject(),
+            coverImageUrl: baseUrl + song.coverImageUrl, 
+        }));
+
+        res.status(200).json(songsWithFullImageUrl);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des chansons:", error);
+        res.status(500).json({ message: "Erreur interne du serveur." });
+    }
+};
+
+
+export const listSong: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const songs = await Song.find().populate("artist genre").limit(7);
 
         const baseUrl = req.protocol + "://" + req.get("host");
 
