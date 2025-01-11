@@ -8,14 +8,14 @@ import FuzzySearch from 'fuzzy-search';
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 
-
+// Instance pour upload les images des musiques sur le serveur
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, "../../images/songs");
         if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true }); // Crée le dossier si inexistant
+            fs.mkdirSync(uploadPath, { recursive: true });
         }
         cb(null, uploadPath);
     },
@@ -37,7 +37,7 @@ const upload = multer({
     }
 });
 
-
+// Route pour ajouter une chanson
 export const addSong: RequestHandler = async (req, res, next) => {
     upload.single("coverImage")(req, res, async (err) => {
         if (err) {
@@ -103,6 +103,7 @@ export const addSong: RequestHandler = async (req, res, next) => {
     });
 };
 
+// Route pour lister toutes les chansons
 export const listSongs: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const songs = await Song.find().populate("artist genre");
@@ -121,7 +122,7 @@ export const listSongs: RequestHandler = async (req: Request, res: Response, nex
     }
 };
 
-
+// Route pour lister 7 chansons à afficher sur l'écran d'accueil (au hasard)
 export const listSong: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const songs = await Song.find().populate("artist genre").limit(7);
@@ -140,6 +141,7 @@ export const listSong: RequestHandler = async (req: Request, res: Response, next
     }
 };
 
+// Route pour récupérer une chanson par ID
 export const getSongById: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     try {
@@ -159,6 +161,7 @@ export const getSongById: RequestHandler = async (req: Request, res: Response, n
     }
 };
 
+// Route pour récupérer les chansons d'un artiste
 export const getSongByArtist: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     const { artist } = req.params;
     try {
@@ -182,6 +185,7 @@ export const getSongByArtist: RequestHandler = async (req: Request, res: Respons
     }
 };
 
+// Route pour récupérer les chansons à partir d'une recherche textuelle
 export const searchSongs: RequestHandler = async (req, res, next) => {
     const { query } = req.query;
 
@@ -226,6 +230,7 @@ export const searchSongs: RequestHandler = async (req, res, next) => {
     }
 };
 
+// Route pour mettre à jour une chanson
 export const updateSong: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     upload.single('coverImage')(req, res, async (err) => {
       if (err) {
@@ -320,7 +325,7 @@ export const deleteSong: RequestHandler = async (req: Request, res: Response, ne
     }
 };
 
-// Route pour augmenter le nombre de lectures d'une chanson
+// Route pour simuler l'écoute d'une musique
 export const playSong: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     try {
@@ -367,7 +372,7 @@ export const listLikes: RequestHandler = async (req: Request, res: Response, nex
     }
 };
 
-// Route pour lister les chansons par genre
+// Route pour lister les chansons triées par genre
 export const getSongsByGenre: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     const { idGenre } = req.params;
 

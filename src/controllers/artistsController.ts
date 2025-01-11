@@ -5,12 +5,16 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { Types } from "mongoose";
+import { Playlist } from "../models/Playlist";
+import { User } from "../models/User";
 
+// Instance de multer pour gérer l'upload des images des artistes
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, "../../images/artists");
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
+            return;
         }
         cb(null, uploadPath);
     },
@@ -33,7 +37,7 @@ const upload = multer({
 });
 
 
-
+// Route pour récupérer la liste des artistes
 export const listArtists: RequestHandler = async (req, res, next) => {
     try {
         const artists = await Artist.find().populate("songs");
@@ -70,7 +74,7 @@ export const listArtists: RequestHandler = async (req, res, next) => {
     }
 };
 
-
+// Route pour ajouter un artiste
 export const addArtist: RequestHandler = async (req, res, next) => {
     upload.single("profilePicture")(req, res, async (err) => {
         if (err) {
@@ -127,6 +131,7 @@ export const addArtist: RequestHandler = async (req, res, next) => {
     });
 };
 
+// Route pour récupérer un artiste par son ID
 export const getArtistById: RequestHandler = async (req, res, next) => {
     const { id } = req.params;
     try {
@@ -164,7 +169,7 @@ export const getArtistById: RequestHandler = async (req, res, next) => {
     }
 };
 
-
+// Route pour récupérer le profil artiste d'un utilisateur
 export const getArtistByUser: RequestHandler = async (req, res, next) => {
     const { userId } = req.params;
     try {
@@ -202,7 +207,7 @@ export const getArtistByUser: RequestHandler = async (req, res, next) => {
     }
 };
 
-
+// Route pour mettre à jour son profil artiste
 export const updateArtist: RequestHandler = async (req, res, next) => {
     upload.single('profilePicture')(req, res, async (err) => {
         if (err) {
@@ -259,30 +264,58 @@ export const updateArtist: RequestHandler = async (req, res, next) => {
     });
 };
 
-export const deleteArtist: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+// Route pour supprimer son profil artiste
+export const deleteArtist: RequestHandler = async (req, res, next) => {
     const { id } = req.params;
+    const userId = req.body.userId;
 
     try {
         const artist = await Artist.findById(id);
         if (!artist) {
-            res.status(404).json({ message: "Artiste non trouvé." });
-        }
-
-        if (!artist) {
-            res.status(404).json({ message: "Artiste non trouvé." });
+             res.status(404).json({ message: "Artiste non trouvé." });
         } else {
-            if (artist.profilePictureUrl) {
-                const imagePath = path.join(__dirname, "../../images/artists", artist.profilePictureUrl.split('/').pop() || "");
-    
-                if (fs.existsSync(imagePath)) {
-                    fs.unlinkSync(imagePath); 
-                }
+            if (artist.userId.toString() !== userId) {
+                res.status(403).json({ message: "Vous n'êtes pas autorisé à supprimer cet artiste." });
             }
         }
 
-        await Artist.findByIdAndDelete(id);
+    
+        const songsToDelete = await Song.find({ artist: id });
+        for (let song of songsToDelete) {
+            if (song.filePath && fs.existsSync(song.filePath)) {
+                fs.unlinkSync(song.filePath);
+            }
+            if (song.coverImageUrl) {
+                const imagePath = path.join(__dirname, "../../images/songs", song.coverImageUrl.split('/').pop() || "");
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath);
+                }
+            }
+            await song.deleteOne();
+        }
 
-        res.status(200).json({ message: "Artiste supprimé avec succès." });
+        const playlistsToUpdate = await Playlist.find({ songs: { $in: songsToDelete.map(song => song._id) } });
+        for (let playlist of playlistsToUpdate) {
+            playlist.songs = playlist.songs.filter(songId => !songsToDelete.map(song => song._id).includes(songId));
+            await playlist.save();
+        }
+
+        await User.updateMany(
+            { favoriteArtists: id },
+            { $pull: { favoriteArtists: id } }
+        );
+
+        if (artist && artist.profilePictureUrl) {
+            const imagePath = path.join(__dirname, "../../images/artists", artist.profilePictureUrl.split('/').pop() || "");
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath); 
+            }
+        }
+        if (artist) {
+            await artist.deleteOne();
+        }
+
+        res.status(200).json({ message: "Artiste et ses données supprimés avec succès." });
 
     } catch (error) {
         console.error("Erreur lors de la suppression de l'artiste:", error);
@@ -290,6 +323,7 @@ export const deleteArtist: RequestHandler = async (req: Request, res: Response, 
     }
 };
 
+// Route pour récupérer la liste des chansons d'un artiste
 export const listArtistSongs: RequestHandler = async (req, res, next) => {
     const { id } = req.params;
     try {

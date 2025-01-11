@@ -67,6 +67,3 @@ debug/
 *.tgz
 *.lock-wscript
 *.wafpickle*
-
-
-images/

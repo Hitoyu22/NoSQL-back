@@ -13,11 +13,13 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
+// Liste des routes pour les utilisateurs
+
 router.post("/register", registerUser); 
 router.post("/login", loginUser);        
 router.get("/me", authMiddleware, getUserProfile); 
 router.put("/:id", authMiddleware, updateUser); 
-router.delete("/:id", authMiddleware, deleteUser);
+router.delete("/", authMiddleware, deleteUser);
 router.get("/:id/favorite-artists", authMiddleware, getFavoriteArtists);
 router.post("/favorite-artists", authMiddleware, addFavoriteArtist);
 router.delete("/favorite-artists/:idArtist", authMiddleware, unfavoriteArtist);

@@ -5,6 +5,7 @@ import { User } from "../models/User";
 import { RequestHandler } from 'express';
 import { Types } from 'mongoose';
 import { Artist } from '../models/Artist';
+import { Playlist } from '../models/Playlist';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ export const registerUser: RequestHandler = async (req, res, next) => {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             res.status(400).json({ message: "Email déjà utilisé." });
+            return;
             return;
         }
 
@@ -120,16 +122,22 @@ export const updateUser: RequestHandler = async (req, res, next) => {
 // Route pour supprimer un utilisateur (à travailler encore car pas suppresion en cascade)
 export const deleteUser: RequestHandler = async (req, res, next) => {
     try {
-        const userId = req.params.id;
+        const userId = req.body.userId;
 
         const user = await User.findById(userId);
         if (!user) {
-            res.status(404).json({ message: "Utilisateur non trouvé." });
-            return;
+             res.status(404).json({ message: "Utilisateur non trouvé." });
         }
 
-        await user.deleteOne();
-        res.status(200).json({ message: "Utilisateur supprimé avec succès." });
+        const playlists = await Playlist.find({ user: userId });
+        for (let playlist of playlists) {
+            await playlist.deleteOne();
+        }
+
+        if (user) {
+            await user.deleteOne();
+        }
+        res.status(200).json({ message: "Utilisateur et ses playlists supprimés avec succès." });
     } catch (error) {
         console.error("Erreur lors de la suppression de l'utilisateur:", error);
         res.status(500).json({ message: "Erreur interne du serveur." });
@@ -142,7 +150,7 @@ export const getFavoriteArtists: RequestHandler = async (req, res, next) => {
         const userId = req.params.id;
         const user = await User.findById(userId).populate({
             path: 'favoriteArtists',
-            model: 'Artist', // Assumes the related model is named 'Artist'
+            model: 'Artist',
         });
 
         if (!user) {
@@ -153,7 +161,7 @@ export const getFavoriteArtists: RequestHandler = async (req, res, next) => {
         const baseUrl = req.protocol + '://' + req.get('host');
 
         const favoriteArtistsWithFullUrls = user.favoriteArtists.map((artist: any) => {
-            let artistWithFullProfileImageUrl = { ...artist._doc }; // Use _doc to access the raw document
+            let artistWithFullProfileImageUrl = { ...artist._doc };
             if (artist.profilePictureUrl) {
                 artistWithFullProfileImageUrl.profilePictureUrl = baseUrl + artist.profilePictureUrl;
             }

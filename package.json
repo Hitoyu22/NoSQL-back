@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon",
-    "build": "tsc"
+    "build": "tsc",
+    "seed" : "tsc && node ./data/seed.ts"
   },
   "keywords": [],
   "author": "",

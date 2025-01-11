@@ -33,7 +33,6 @@ export const getGenreById: RequestHandler = async (req: Request, res: Response, 
 export const addGenre: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     const { name, description } = req.body;
 
-    // Vérification si le nom du genre est présent
     if (!name) {
         res.status(400).json({ message: "Le nom du genre est requis." });
         return;

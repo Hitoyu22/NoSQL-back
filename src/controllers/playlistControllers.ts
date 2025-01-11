@@ -7,6 +7,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
+
+// Instance de stockage des images des playlists
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, "../../images/playlists"); 
@@ -94,7 +96,7 @@ export const getUserPlaylists: RequestHandler = async (req: Request, res: Respon
                 const playlistImageUrl = baseUrl + playlist.coverImageUrl;
                 return {
                     ...playlist.toObject(),
-                    profilePictureUrl: playlistImageUrl,  
+                    coverImageUrl: playlistImageUrl,  
                 };
             }
             return playlist;  
@@ -106,6 +108,8 @@ export const getUserPlaylists: RequestHandler = async (req: Request, res: Respon
         res.status(500).json({ message: "Erreur interne du serveur" });
     }
 };
+
+
 // Route pour ajouter une chanson à une playlist
 export const addSongToPlaylist: RequestHandler = async (req: Request, res: Response): Promise<void> => {
     const { idPlaylist } = req.params;
@@ -238,4 +242,69 @@ export const deletePlaylist: RequestHandler = async (req: Request, res: Response
         console.error("Erreur lors de la suppression de la playlist:", error);
         res.status(500).json({ message: "Erreur interne du serveur" });
     }
+};
+
+// Route pour récupérer une playlist
+export const getOnePlaylist: RequestHandler = async (req: Request, res: Response): Promise<void> => {
+    const { idPlaylist } = req.params;
+
+    try {
+        const playlist = await Playlist.findById(idPlaylist);
+
+        if (!playlist) {
+            res.status(404).json({ message: "Playlist non trouvée" });
+            return;
+        }
+
+        res.status(200).json(playlist);
+    } catch (error) {
+        console.error("Erreur lors de la récupération de la playlist:", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+}
+
+// Route pour mettre à jour une playlist
+export const updatePlaylist: RequestHandler = async (req: Request, res: Response): Promise<void> => {
+    upload.single("coverImageUrl")(req, res, async (err) => {
+        if (err) {
+            res.status(400).json({ message: "Erreur lors du téléchargement de l'image", error: err.message });
+            return;
+        }
+
+        const { idPlaylist } = req.params;
+        const { name, description, isPublic } = req.body;
+
+        try {
+            const playlist = await Playlist.findById(idPlaylist);
+
+            if (!playlist) {
+                res.status(404).json({ message: "Playlist non trouvée" });
+                return;
+            }
+
+            if (name) playlist.name = name;
+            if (description) playlist.description = description;
+            if (isPublic !== undefined) playlist.isPublic = isPublic === "true";
+
+            if (req.file) {
+                const newCoverImageUrl = `/images/playlists/${req.file.filename}`;
+
+                if (playlist.coverImageUrl) {
+                    const oldImagePath = path.join(__dirname, "../../public", playlist.coverImageUrl);
+                    if (fs.existsSync(oldImagePath)) {
+                        fs.unlinkSync(oldImagePath);
+                    }
+                }
+
+                playlist.coverImageUrl = newCoverImageUrl;
+            }
+
+            await playlist.save();
+
+            res.status(200).json({ message: "Playlist mise à jour", playlist });
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour de la playlist:", error);
+            res.status(500).json({ message: "Erreur interne du serveur" });
+        }
+    });
 };
