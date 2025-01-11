@@ -34,7 +34,7 @@ Les étapes à suivre sont les suivantes :
 - Créer une base de données vierge sur MongoDB (par exemple depuis l'interface Compass), supposons que votre bdd se nomme **test** pour la suite.
 - Utilise la commande suivante pour importer la backup dans la base de données : 
 ```bash
-mongorestore --uri="mongodb://localhost:27017/test" /projet-nosql
+mongorestore --uri="mongodb://localhost:27017/test" ./projet-nosql/
 ```
 
 Vous devriez normalement avoir accès dans MongoDb a une base de données test avec toutes les données importées. 
